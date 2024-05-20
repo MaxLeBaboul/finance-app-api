@@ -5,6 +5,10 @@ import express from "express";
 import helmet from "helmet";
 import mongoose from "mongoose";
 import morgan from "morgan";
+import { kpis } from "./data/data.js";
+import KPI from "./models/KPI.js";
+import kpiRoutes from "./routes/kpi.js";
+
 dotenv.config();
 
 const PORT = process.env.PORT || 9000;
@@ -20,13 +24,25 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 
-/* MONGOOSE SETUP */
+/* ROUTES */
+app.use("/kpis", kpiRoutes);
+
+/* MONGOOSE AND SERVER SETUP */
 mongoose
   .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
+    useUnifiedTopology: true,
   })
   .then(async () => {
-    app.listen(PORT, () => console.log(`Database Port: ${PORT}`));
+    app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
+
+    const collections = await mongoose.connection.db.collections();
+
+    for (let collection of collections) {
+      await collection.deleteMany({});
+    }
+
+    await KPI.insertMany(kpis);
   })
   .catch((err) => {
     console.log(`${err} did not connect`);
