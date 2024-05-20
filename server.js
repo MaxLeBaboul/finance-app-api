@@ -3,7 +3,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import helmet from "helmet";
+import mongoose from "mongoose";
 import morgan from "morgan";
+dotenv.config();
+
+const PORT = process.env.PORT || 9000;
 
 /* CONFIGURATION*/
 dotenv.config();
@@ -17,3 +21,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cors());
 
 /* MONGOOSE SETUP */
+mongoose
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+  })
+  .then(async () => {
+    app.listen(PORT, () => console.log(`Database Port: ${PORT}`));
+  })
+  .catch((err) => {
+    console.log(`${err} did not connect`);
+  });
